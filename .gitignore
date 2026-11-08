@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.ruff_cache/
+
+# Local, site-specific settings (see site.env.example)
+site.env
+*.local.env
+
+# Local workspace files
+memory/
+skills/
+.sandbox.toml

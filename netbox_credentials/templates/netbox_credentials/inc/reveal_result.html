@@ -1,0 +1,19 @@
+{% load i18n %}
+{% if error %}
+  <div class="alert alert-danger mb-0 w-100" role="alert">
+    <i class="mdi mdi-alert-circle"></i> {{ error }}
+  </div>
+{% elif no_secret %}
+  <span class="text-muted">{% trans "No secret stored" %}</span>
+{% else %}
+  <div class="input-group input-group-sm nbc-revealed" style="max-width: 32rem;">
+    <input type="text" class="form-control font-monospace" value="{{ secret }}" readonly
+           autocomplete="off" spellcheck="false" aria-label="{% trans 'Secret' %}">
+    <button type="button" class="btn btn-outline-secondary" data-nbc-copy title="{% trans 'Copy' %}">
+      <i class="mdi mdi-content-copy"></i>
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-nbc-hide title="{% trans 'Hide' %}">
+      <i class="mdi mdi-eye-off"></i>
+    </button>
+  </div>
+{% endif %}

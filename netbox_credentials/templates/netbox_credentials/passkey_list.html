@@ -1,0 +1,106 @@
+{% extends 'generic/_base.html' %}
+{% load i18n %}
+{% load static %}
+{% load helpers %}
+
+{% block title %}{% trans "My passkeys" %}{% endblock %}
+
+{% block controls %}
+  {% if request.user.is_superuser %}
+    <div class="btn-list justify-content-end mb-2">
+      <a href="{% url 'plugins:netbox_credentials:passkey_admin_list' %}" class="btn btn-outline-secondary">
+        <i class="mdi mdi-account-key"></i> {% trans "All users' passkeys" %}
+      </a>
+    </div>
+  {% endif %}
+{% endblock controls %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-md-8">
+    {% if not secure_context %}
+      <div class="alert alert-warning">
+        {% trans "Passkeys need HTTPS (or http://localhost). Open NetBox over HTTPS to register or use one." %}
+      </div>
+    {% endif %}
+    <div class="card">
+      <h2 class="card-header">{% trans "Passkeys" %}</h2>
+      <div class="card-body">
+        <p class="text-muted mb-0">
+          {% blocktrans trimmed %}
+            Revealing a secret in the web interface asks for one of these passkeys every time.
+            They belong to this plugin only and are separate from how you sign in to NetBox.
+            Adding or removing a passkey asks you to confirm with one you already have.
+          {% endblocktrans %}
+        </p>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover card-table">
+          <thead>
+            <tr>
+              <th>{% trans "Name" %}</th>
+              <th>{% trans "Added" %}</th>
+              <th>{% trans "Last used" %}</th>
+              <th>{% trans "Synced" %}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for passkey in passkeys %}
+              <tr>
+                <td>
+                  <form method="post" action="{% url 'plugins:netbox_credentials:passkey_rename' pk=passkey.pk %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="name" value="{{ passkey.name }}" maxlength="64" class="form-control form-control-sm" aria-label="{% trans 'Name' %}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">{% trans "Rename" %}</button>
+                  </form>
+                </td>
+                <td>{{ passkey.created|isodatetime:"minutes" }}</td>
+                <td>{{ passkey.last_used|isodatetime:"minutes"|placeholder }}</td>
+                <td>{% checkmark passkey.backed_up %}</td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-danger" {% if not secure_context %}disabled{% endif %}
+                          data-nbc-passkey-delete
+                          data-stepup-url="{% url 'plugins:netbox_credentials:passkey_stepup_begin' %}"
+                          data-delete-url="{% url 'plugins:netbox_credentials:passkey_delete' pk=passkey.pk %}"
+                          data-name="{{ passkey.name }}">
+                    <i class="mdi mdi-trash-can-outline"></i> {% trans "Remove" %}
+                  </button>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-muted">{% trans "You have not registered a passkey yet." %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-header">{% trans "Register a passkey" %}</h2>
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col">
+            <label for="nbc-passkey-name" class="form-label">{% trans "Name" %}</label>
+            <input type="text" id="nbc-passkey-name" class="form-control" maxlength="64"
+                   placeholder="{% trans 'e.g. YubiKey 5C or MacBook Touch ID' %}">
+          </div>
+          <div class="col-auto">
+            <button type="button" class="btn btn-primary" {% if not secure_context %}disabled{% endif %}
+                    data-nbc-passkey-register
+                    data-has-passkeys="{% if passkeys %}1{% else %}0{% endif %}"
+                    data-stepup-url="{% url 'plugins:netbox_credentials:passkey_stepup_begin' %}"
+                    data-begin-url="{% url 'plugins:netbox_credentials:passkey_register_begin' %}"
+                    data-finish-url="{% url 'plugins:netbox_credentials:passkey_register_finish' %}"
+                    data-name-input="nbc-passkey-name">
+              <i class="mdi mdi-key-plus"></i> {% trans "Register passkey" %}
+            </button>
+          </div>
+        </div>
+        <div id="nbc-passkey-status" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'netbox_credentials/passkeys.js' %}" defer></script>
+{% endblock content %}

@@ -1,0 +1,20 @@
+[Unit]
+Description=NetBox dev instance (netbox-credentials plugin testing)
+After=network-online.target postgresql.service redis-server.service
+Requires=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=netboxdev
+Group=netboxdev
+EnvironmentFile=/etc/netbox-dev.env
+Environment=HOME=/var/lib/netboxdev
+WorkingDirectory=/opt/netbox-dev/netbox
+# Django dev server: autoreloads when the plugin source changes. Bound to
+# loopback only; reach it with an SSH tunnel so WebAuthn sees http://localhost.
+ExecStart=/opt/netbox-dev/venv/bin/python manage.py runserver 127.0.0.1:8002
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

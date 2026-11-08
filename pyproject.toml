@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netbox-credentials"
+version = "0.1.0"
+description = "NetBox plugin for encrypted credentials, linked to any object, with passkey-gated reveal in the UI."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Athena Networks" }]
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "cryptography>=42",
+    "webauthn>=3.0,<4",
+]
+
+[tool.setuptools.packages.find]
+include = ["netbox_credentials*"]
+
+[tool.setuptools.package-data]
+netbox_credentials = ["templates/**/*", "static/**/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["netbox_credentials"]
+known-third-party = ["netbox", "utilities", "core", "extras", "users", "dcim"]
+
+[tool.ruff.format]
+quote-style = "double"

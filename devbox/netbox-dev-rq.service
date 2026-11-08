@@ -1,0 +1,18 @@
+[Unit]
+Description=NetBox dev instance request queue worker
+After=network-online.target postgresql.service redis-server.service
+Requires=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=netboxdev
+Group=netboxdev
+EnvironmentFile=/etc/netbox-dev.env
+Environment=HOME=/var/lib/netboxdev
+WorkingDirectory=/opt/netbox-dev/netbox
+ExecStart=/opt/netbox-dev/venv/bin/python manage.py rqworker high default low
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
